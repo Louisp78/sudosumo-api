@@ -22,9 +22,30 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-oauth2-resource-server:6.3.3'
 	implementation 'org.springframework.security:spring-security-oauth2-jose:6.3.3'
 	implementation 'org.springframework.boot:spring-boot-starter-security:3.3.3'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.3.3'
+	implementation 'org.postgresql:postgresql:42.7.4'
+	implementation 'org.projectlombok:lombok:1.18.34'
+
+	compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+bootRun {
+    doFirst {
+        def envFile = file('.env')
+        if (envFile.exists()) {
+            def envVars = new Properties()
+            envFile.withInputStream { stream ->
+                envVars.load(stream)
+            }
+            envVars.each { key, value ->
+                environment(key, value)
+            }
+        }
+    }
 }
 
 tasks.named('test') {
