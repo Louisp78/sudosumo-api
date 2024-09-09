@@ -22,24 +22,46 @@ public class UserEntity {
     @Column(unique = true)
     private String email;
 
+    private String name;
+
     @Column(nullable = true, unique = true)
     private String username = null;
-    @Column(name = "avatar_url")
+
     private String avatarUrl;
 
     private Integer noodles;
 
     private Integer lifes;
 
+    private Integer nbOfSolvedPuzzle;
+
+    // TODO: add constraint for enum
+    private String puzzleDifficulty;
+
+    private String bio = null;
+
     public UserEntity() {
     }
 
-    public UserEntity(String sub, String email, String avatarUrl, Integer noodles, Integer lifes) {
+    public UserEntity(Long id, String sub, String email, String name, String username, String avatarUrl,
+            Integer noodles,
+            Integer lifes,
+            Integer nbOfSolvedPuzzle, String puzzleDifficulty, String bio) {
+        this.id = id;
         this.sub = sub;
         this.email = email;
+        this.name = name;
+        this.username = username;
         this.avatarUrl = avatarUrl;
         this.noodles = noodles;
         this.lifes = lifes;
+        this.nbOfSolvedPuzzle = nbOfSolvedPuzzle;
+        this.puzzleDifficulty = puzzleDifficulty;
+        this.bio = bio;
+    }
+
+    public Long getId() {
+        return this.id;
     }
 
     public String getSub() {
@@ -48,6 +70,10 @@ public class UserEntity {
 
     public String getEmail() {
         return this.email;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public String getUsername() {
@@ -64,5 +90,17 @@ public class UserEntity {
 
     public Integer getLifes() {
         return this.lifes;
+    }
+
+    public Integer getNbOfSolvedPuzzle() {
+        return this.nbOfSolvedPuzzle;
+    }
+
+    public String getPuzzleDifficulty() {
+        return this.puzzleDifficulty;
+    }
+
+    public String getBio() {
+        return this.bio;
     }
 }

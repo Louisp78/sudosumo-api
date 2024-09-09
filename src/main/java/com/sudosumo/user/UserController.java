@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sudosumo.user.dto.request.NoodlesDTO;
+import com.sudosumo.user.dto.request.UpdateUserDTO;
 import com.sudosumo.user.exception.UserNotFoundException;
 
 @RestController
@@ -35,6 +36,18 @@ public class UserController {
         }
     }
 
+    @PostMapping("/")
+    public ResponseEntity<?> updateUserInfos(JwtAuthenticationToken principal,
+            @RequestBody UpdateUserDTO body) {
+        final String sub = principal.getToken().getSubject();
+        try {
+            UserDTO user = repository.updateUserBySub(body, sub);
+            return ResponseEntity.ok(user);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     /*
      * Call this endpoint after successfull OAuth2 auth
      */
@@ -47,13 +60,14 @@ public class UserController {
         } catch (UserNotFoundException e) {
             final String avatarUrl = principal.getToken().getClaimAsString("picture");
             final String email = principal.getToken().getClaimAsString("email");
-            final UserDTO userCreated = repository.createUserWithSub(sub, email, avatarUrl);
+            final String name = principal.getToken().getClaimAsString("name");
+            final UserDTO userCreated = repository.createUserWithSub(sub, email, name, avatarUrl);
             return ResponseEntity.ok(userCreated);
         }
 
     }
 
-    @PutMapping("/loseALife")
+    @PutMapping("/lose-life")
     public ResponseEntity<?> loseALife(JwtAuthenticationToken principal) {
         final String sub = principal.getToken().getSubject();
         try {
@@ -64,10 +78,11 @@ public class UserController {
         }
     }
 
-    @PutMapping("/winNoodles")
-    public ResponseEntity<?> winNoodles(JwtAuthenticationToken principal,
+    @PutMapping("/win-game")
+    public ResponseEntity<?> winGame(JwtAuthenticationToken principal,
             @RequestBody NoodlesDTO body) {
         final String sub = principal.getToken().getSubject();
+        repository.winPuzzleBySub(sub);
         repository.winNoodlesBySub(sub, body.getNoodles());
         return ResponseEntity.ok().build();
     }

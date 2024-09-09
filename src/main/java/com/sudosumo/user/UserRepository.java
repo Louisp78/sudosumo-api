@@ -4,11 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
+import com.sudosumo.user.dto.request.UpdateUserDTO;
 import com.sudosumo.user.exception.NoLifeLeftException;
 import com.sudosumo.user.exception.UserNotFoundException;
+import com.sudosumo.user.types.DifficultyEnum;
 
 @Service
 public class UserRepository {
@@ -17,45 +18,30 @@ public class UserRepository {
 
     private final UserJPARepository repository;
 
-    private final TaskScheduler taskScheduler;
-
     @Autowired
-    public UserRepository(UserJPARepository repository, TaskScheduler taskScheduler) {
+    public UserRepository(UserJPARepository repository) {
         this.repository = repository;
-        this.taskScheduler = taskScheduler;
     }
 
     public UserDTO getUserBySub(String sub) throws UserNotFoundException {
         try {
             final UserEntity user = repository.findBySub(sub);
-            return new UserDTO(user.getUsername(), user.getAvatarUrl(), user.getNoodles(), user.getLifes());
+            return UserMapper.getDTO(user);
         } catch (Exception e) {
             throw new UserNotFoundException();
         }
     }
 
-    public UserDTO createUserWithSub(String sub, String email, String avatarUrl) {
-        final UserEntity user = new UserEntity(sub, email, avatarUrl, 0, 0);
+    public UserDTO createUserWithSub(String sub, String email, String name, String avatarUrl) {
+        final UserEntity user = new UserEntity(null, sub, email, name, null, avatarUrl, 0, 5, 0,
+                DifficultyEnum.EASY.getAttribute(), null);
         final UserEntity registerUser = repository.save(user);
-        return new UserDTO(registerUser.getSub(), registerUser.getAvatarUrl(), registerUser.getNoodles(),
-                registerUser.getLifes());
+        return UserMapper.getDTO(registerUser);
     }
 
     public void loseALifeFromSub(String sub) throws NoLifeLeftException {
         try {
             repository.decrementLifeByOne(sub);
-
-            // TODO: implements life refill in a day
-            /*
-             * Instant triggerTime = Instant.now().plusMillis(5000);
-             * taskScheduler.schedule(() -> refillLifes(sub), new Trigger() {
-             * 
-             * @Override
-             * public Instant nextExecution(TriggerContext triggerContext) {
-             * return triggerTime;
-             * }
-             * });
-             */
         } catch (DataAccessException e) {
             if (e.getMessage().contains("users_lifes_check")) {
                 throw new NoLifeLeftException();
@@ -73,5 +59,20 @@ public class UserRepository {
 
     public void winNoodlesBySub(String sub, Integer noodlesWon) {
         repository.addNoodlesBySub(sub, noodlesWon);
+    }
+
+    public void winPuzzleBySub(String sub) {
+        repository.addPuzzleBySub(sub);
+    }
+
+    public UserDTO updateUserBySub(UpdateUserDTO body, String sub) throws UserNotFoundException {
+        try {
+            final UserEntity user = repository.findBySub(sub);
+            final UserEntity modifiedUser = UserMapper.getEntity(user, body);
+            return UserMapper.getDTO(repository.save(modifiedUser));
+        } catch (Exception e) {
+            throw new UserNotFoundException();
+        }
+
     }
 }

@@ -10,7 +10,7 @@ public class HelloController {
     @GetMapping("/")
     public static String hello(JwtAuthenticationToken principal) {
         return String.format("Here you're infos :\nSub: %s\nEmail: %s\nAvatarUrl: %s",
-                principal.getToken().getSubject(), principal.getToken().getClaimAsString("email"),
+                principal.getToken().getSubject(), principal.getToken().getClaimAsString("name"),
                 principal.getToken().getClaimAsString("picture"));
     }
 }

@@ -30,4 +30,9 @@ public interface UserJPARepository extends JpaRepository<UserEntity, Long> {
     @Modifying
     @Query("UPDATE users u SET u.noodles = u.noodles + :noodles WHERE u.sub = :sub")
     void addNoodlesBySub(String sub, Integer noodles);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE users u SET u.nbOfSolvedPuzzle = u.nbOfSolvedPuzzle + 1 WHERE u.sub = :sub")
+    void addPuzzleBySub(String sub);
 }
